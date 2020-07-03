@@ -3218,6 +3218,7 @@ VFSHookInterceptor* newVFSHookInterceptor(void)
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "ext4", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "jfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "xfs", false);
+    appendObject(&GL_object, &GL_object.mGoodFilesystems, "btrfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "reiserfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "tmpfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "minix", false);
@@ -3236,6 +3237,7 @@ VFSHookInterceptor* newVFSHookInterceptor(void)
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "ncpfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "ramfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "aufs", false);
+    appendObject(&GL_object, &GL_object.mGoodFilesystems, "squashfs", false);
 
     /* Filesystem which should not (or must not) be patched */
     appendObject(&GL_object, &GL_object.mSkipFilesystems, "rootfs", true);
@@ -3266,6 +3268,7 @@ VFSHookInterceptor* newVFSHookInterceptor(void)
     appendObject(&GL_object, &GL_object.mSkipFilesystems, "mqueue", true);
     appendObject(&GL_object, &GL_object.mSkipFilesystems, "cgroup", false);
     appendObject(&GL_object, &GL_object.mSkipFilesystems, "cgroup2", false);
+    appendObject(&GL_object, &GL_object.mSkipFilesystems, "nsfs", false);
 
     /* Filesystems not to be scanned immediately after mount */
 #ifdef TALPA_HAS_SMBFS
