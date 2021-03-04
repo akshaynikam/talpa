@@ -41,6 +41,7 @@ EXTRA_CFLAGS += -I$(src)/../../src -I$(src)/../../src/ifaces -I$(src)/../../incl
 		@filldirbackport@ \
 		@mountrcubackport@ \
 		@probe_kernel_read@ \
+		@probe_kernel_write@ \
 		@binarysysctl@ \
 		@securityfs@ \
 		@linuxuidgid@ \

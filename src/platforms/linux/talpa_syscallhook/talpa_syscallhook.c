@@ -3,7 +3,7 @@
  *
  * TALPA Filesystem Interceptor
  *
- * Copyright(C) 2004-2019 Sophos Limited, Oxford, England.
+ * Copyright(C) 2004-2021 Sophos Limited, Oxford, England.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -48,16 +48,23 @@
 #include <asm/page.h>
 #include <asm/cacheflush.h>
 #endif
-#ifdef TALPA_HAS_PROBE_KERNEL_WRITE
-#include <linux/vmalloc.h>
-#include <linux/uaccess.h>
-#endif
-
 #if defined(CONFIG_DEBUG_SET_MODULE_RONX) \
     || defined(CONFIG_DEBUG_RODATA) \
     || defined(CONFIG_STRICT_KERNEL_RWX) \
     || defined(CONFIG_STRICT_MODULE_RWX)
-#define TALPA_SHADOW_MAP
+# define TALPA_SHADOW_MAP
+# ifdef TALPA_RODATA_MAP_WRITABLE
+# include <linux/vmalloc.h>
+# endif
+#endif
+#ifdef TALPA_HAS_PROBE_KERNEL_WRITE
+#define TALPA_HAS_KERNEL_WRITE
+#include <linux/uaccess.h>
+#define talpa_kernel_write(dst, src, size) probe_kernel_write(dst, src, size)
+#endif
+#ifdef TALPA_HAS_COPY_TO_KERNEL_NOFAULT
+#define TALPA_HAS_KERNEL_WRITE
+typedef int (*ctknf_fn)(void *dst, const void *src, size_t size);
 #endif
 
 #include "platforms/linux/glue.h"
@@ -458,8 +465,11 @@ void *talpa_syscallhook_poke(void *addr, void *val)
 {
     unsigned long target = (unsigned long)addr;
 
-#ifdef TALPA_HAS_PROBE_KERNEL_WRITE
+#ifdef TALPA_HAS_KERNEL_WRITE
     long probeRes;
+# ifdef TALPA_HAS_COPY_TO_KERNEL_NOFAULT
+    ctknf_fn talpa_kernel_write = (ctknf_fn)talpa_get_symbol("copy_to_kernel_nofault", (void *)TALPA_COPY_TO_KERNEL_NOFAULT_ADDR);
+# endif
 #endif
 
 
@@ -473,8 +483,8 @@ void *talpa_syscallhook_poke(void *addr, void *val)
     }
 #endif
 
-#ifdef TALPA_HAS_PROBE_KERNEL_WRITE
-    probeRes = probe_kernel_write((void*)target,(void*)&val,sizeof(void*));
+#ifdef TALPA_HAS_KERNEL_WRITE
+    probeRes = talpa_kernel_write((void*)target,(void*)&val,sizeof(void*));
 
 #ifdef TALPA_SHADOW_MAP
     if (probeRes == -EFAULT)
@@ -486,7 +496,7 @@ void *talpa_syscallhook_poke(void *addr, void *val)
         rwshadow = (unsigned long)talpa_syscallhook_unro((void *)target, sizeof(void*), 1);
         if (rwshadow)
         {
-            probeRes = probe_kernel_write((void*)rwshadow,(void*)&val,sizeof(void*));
+            probeRes = talpa_kernel_write((void*)rwshadow,(void*)&val,sizeof(void*));
             talpa_syscallhook_unro((void *)(rwshadow), sizeof(void*), 0);
         }
     }
@@ -995,7 +1005,7 @@ static void *map_writable(void *addr, size_t len)
 #endif /* LINUX_VERSION_CODE || !CONFIG_X86_64 */
                         WARN_ON(!PageReserved(pages[i]));
                 } else {
-                        pages[i] = vmalloc_to_page(addr);
+                        pages[i] = vmalloc_to_page(page_addr);
                 }
                 if (pages[i] == NULL) {
                         kfree(pages);

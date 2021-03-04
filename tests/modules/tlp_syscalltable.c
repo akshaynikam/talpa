@@ -3,7 +3,7 @@
  *
  * TALPA Filesystem Interceptor
  *
- * Copyright(C) 2004-2019 Sophos Limited, Oxford, England.
+ * Copyright(C) 2004-2021 Sophos Limited, Oxford, England.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -488,7 +488,7 @@ static void *map_writable(void *addr, size_t len)
 #endif /* LINUX_VERSION_CODE || !CONFIG_X86_64 */
                         WARN_ON(!PageReserved(pages[i]));
                 } else {
-                        pages[i] = vmalloc_to_page(addr);
+                        pages[i] = vmalloc_to_page(page_addr);
                 }
                 if (pages[i] == NULL) {
                         kfree(pages);

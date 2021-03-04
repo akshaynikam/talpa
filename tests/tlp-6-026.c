@@ -1,7 +1,7 @@
 /*
  * TALPA test program
  *
- * Copyright (C) 2004-2011 Sophos Limited, Oxford, England.
+ * Copyright (C) 2004-2021 Sophos Limited, Oxford, England.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
     if ( fd < 0 )
     {
-        fprintf(stderr,"Failed to open talpa-test device!\n");
+        perror("Failed to open talpa-test device!");
         return 1;
     }
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
     if ( ret < 0 )
     {
-        fprintf(stderr,"Create error!\n");
+        perror("Create error!");
         close(fd);
         return 1;
     }
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 
     if ( ret < 0 )
     {
-        fprintf(stderr,"Open error!\n");
+        perror("Open error!");
         close(fd);
         return 1;
     }
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
     if ( ret <= 0 )
     {
-        fprintf(stderr,"isOpen error!\n");
+        perror("isOpen error!");
         close(fd);
         return 1;
     }
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 
     if ( ret < 0 )
     {
-        fprintf(stderr,"length ioctl error!\n");
+        perror("length ioctl error!");
         close(fd);
         return 1;
     }
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 
     if ( ret < 0 )
     {
-        fprintf(stderr,"Write error!\n");
+        perror("Write error!");
         close(fd);
         return 1;
     }
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 
     if ( rfd < 0 )
     {
-        fprintf(stderr,"libc open error!\n");
+        perror("libc open error!");
         close(fd);
         return 0;
     }
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 
     if ( ret < 0 )
     {
-        fprintf(stderr,"libc read error!\n");
+        perror("libc read error!");
         close(fd);
         return 0;
     }
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 
     if ( ret < 0 )
     {
-        fprintf(stderr,"Close error!\n");
+        perror("Close error!");
         close(fd);
         return 1;
     }

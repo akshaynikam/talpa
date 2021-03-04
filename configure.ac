@@ -3,7 +3,7 @@
 #
 # TALPA Filesystem Interceptor
 #
-# Copyright (C) 2004-2019 Sophos Plc
+# Copyright (C) 2004-2021 Sophos Plc
 #
 # This program is free software; you can redistribute it and/or modify it under the terms of the
 # GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -878,7 +878,7 @@ else
     TALPA_LOCATE_HEADER(linux/sched.h, $kernelhdrspath)
     AC_MSG_CHECKING([for unused task flag])
     ${RM} -f ffzb_local.c ffzb_local
-    if ! ${EGREP} "#define PF_" $TALPA_HEADER_LOCATION/linux/sched.h > ffzb_local.c; then
+    if ! ${EGREP} "#define PF_" $TALPA_HEADER_LOCATION/linux/sched.h | ${CUT} -d'/' -f1 > ffzb_local.c; then
         AC_MSG_ERROR([grep error])
     fi
     echo "#define PF_TALPA_ALL \\" >> ffzb_local.c
@@ -1138,6 +1138,42 @@ then
         AC_SUBST(probe_kernel_read,"-DTALPA_HAS_PROBE_KERNEL_READ")
     else
         AC_MSG_RESULT([not present])
+        probe_kernel_read_missing=yes
+    fi
+
+    AC_MSG_CHECKING([for probe_kernel_write])
+    ${EGREP} probe_kernel_write $TALPA_HEADER_LOCATION/linux/uaccess.h >/dev/null 2>&1
+    if test $? -eq 0
+    then
+        AC_MSG_RESULT([present])
+        AC_SUBST(probe_kernel_write,"-DTALPA_HAS_PROBE_KERNEL_WRITE")
+    else
+        AC_MSG_RESULT([not present])
+        probe_kernel_write_missing=yes
+    fi
+
+    if test "$probe_kernel_read_missing" == "yes"; then
+        AC_MSG_CHECKING([for copy_from_user_nofault])
+        ${EGREP} copy_from_user_nofault $TALPA_HEADER_LOCATION/linux/uaccess.h >/dev/null 2>&1
+        if test $? -eq 0
+        then
+            AC_MSG_RESULT([present])
+            AC_SUBST(probe_kernel_read,"-DTALPA_HAS_COPY_FROM_USER_NOFAULT")
+        else
+            AC_MSG_RESULT([not present])
+        fi
+    fi
+fi
+
+# If probe_kernel_write is not exported, find copy_to_kernel_nofault (5.8.0+)
+if test "$probe_kernel_write_missing" == "yes"; then
+    AC_MSG_CHECKING([for copy_to_kernel_nofault address])
+    copy_to_kernel_nofault_addr=`${EGREP} " copy_to_kernel_nofault\$" "$system_map" 2>/dev/null | ${CUT} -d ' ' -f 1`
+    if test "$copy_to_kernel_nofault_addr" != ""; then
+        AC_MSG_RESULT([0x$copy_to_kernel_nofault_addr])
+        AC_SUBST(probe_kernel_write, "$probe_kernel_write -DTALPA_HAS_COPY_TO_KERNEL_NOFAULT -DTALPA_COPY_TO_KERNEL_NOFAULT_ADDR=0x${copy_to_kernel_nofault_addr}UL")
+    else
+        AC_MSG_ERROR([not found])
     fi
 fi
 
@@ -1635,7 +1671,7 @@ if test $((kern_version_code)) -ge 132608; then
                     AC_SUBST(rodata, "-DTALPA_HAS_RODATA -DTALPA_NEED_MANUAL_RODATA -DTALPA_RODATA_START=0x${start_rodata}UL -DTALPA_RODATA_END=0x${end_rodata}UL")
                     ## >= 2.6.25
                     if test $((kern_version_code)) -ge 132633; then
-                        AC_SUBST(rodata, "$rodata -DTALPA_RODATA_MAP_WRITABLE -DTALPA_HAS_PROBE_KERNEL_WRITE")
+                        AC_SUBST(rodata, "$rodata -DTALPA_RODATA_MAP_WRITABLE")
                         AC_SUBST(map_writable, yes)
                         AC_MSG_RESULT([yes; shadow mapping])
                     else
@@ -2140,6 +2176,7 @@ if test $((kern_version_code)) -ge 132608; then
                 s/@kfuncchpgattraddr@/${kfuncchpgattraddr}/; \
                 s/@notasklistlock@/${notasklistlock}/; \
                 s/@probe_kernel_read@/${probe_kernel_read}/; \
+                s/@probe_kernel_write@/${probe_kernel_write}/; \
                 s/@vfsmntlock@/${vfsmntlock}/; \
                 s/@samefile@/${samefile}/; \
                 s/@buildprocfs@/${buildprocfs}/; s/@binarysysctl@/${binarysysctl}/; \
@@ -2201,6 +2238,7 @@ if test $((kern_version_code)) -ge 132608; then
                 s/@kfuncchpgattraddr@/${kfuncchpgattraddr}/; \
                 s/@notasklistlock@/${notasklistlock}/; \
                 s/@probe_kernel_read@/${probe_kernel_read}/; \
+                s/@probe_kernel_write@/${probe_kernel_write}/; \
                 s/@vfsmntlock@/${vfsmntlock}/; \
                 s/@samefile@/${samefile}/; \
                 s/@buildprocfs@/${buildprocfs}/; s/@binarysysctl@/${binarysysctl}/; \

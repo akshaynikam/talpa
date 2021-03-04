@@ -3,7 +3,7 @@
  *
  * TALPA Filesystem Interceptor
  *
- * Copyright (C) 2004-2017 Sophos Limited, Oxford, England.
+ * Copyright (C) 2004-2021 Sophos Limited, Oxford, England.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -50,7 +50,9 @@ static int ctlHandler(ctl_table* table, int* name, int nlen, void* oldvalue, siz
 static int ctlHandler(ctl_table* table, int* name, int nlen, void* oldvalue, size_t* oldlenptr, void* newvalue, size_t newlen, void** context);
   #endif
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0)
+static int procHandler(ctl_table *table, int write, void *buffer, size_t *lenp, loff_t *ppos);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32)
 static int procHandler(ctl_table* table, int write, void __user * buffer, size_t* lenp, loff_t* ppos);
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,8)
 static int procHandler(ctl_table* table, int write, struct file* filp, void __user * buffer, size_t* lenp, loff_t* ppos);
@@ -395,7 +397,10 @@ static int ctlHandler(ctl_table* table, int* name, int nlen, void* oldvalue, siz
 }
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0)
+#define PPOS *ppos
+static int procHandler(ctl_table *table, int write, void *buffer, size_t *lenp, loff_t *ppos)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32)
 #define PPOS *ppos
 static int procHandler(ctl_table* table, int write, void __user * buffer, size_t* lenp, loff_t* ppos)
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,8)
@@ -414,19 +419,27 @@ static int procHandler(ctl_table* table, int write, struct file* filp, void __us
     if (write)
     {
         size_t  len;
-        char __user *   p;
         char    c;
         char*   cfgValue;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0)
+        char*   p;
+#else
+        char __user *   p;
 
         if ( strnlen_user(buffer, *lenp) < 0 )
         {
             return -EFAULT;
         }
+#endif
         len = 0;
         p = buffer;
         while (len < *lenp)
         {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0)
+            c = *(p++);
+#else
             __get_user(c, p++);
+#endif
             if (c == 0 || c == '\n')
             {
                 break;
@@ -442,10 +455,14 @@ static int procHandler(ctl_table* table, int write, struct file* filp, void __us
         {
             return -ENOMEM;
         }
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0)
+        memcpy(cfgValue, buffer, len);
+#else        
         if (copy_from_user(cfgValue, buffer, len))
         {
             return -EFAULT;
         }
+#endif
         if (len == table->maxlen)
         {
             len--;
@@ -486,17 +503,26 @@ static int procHandler(ctl_table* table, int write, struct file* filp, void __us
         }
         if ( amountToCopy - extraNewLine > 0 )
         {
-            if ( copy_to_user(buffer, data+PPOS, amountToCopy - extraNewLine) ) /* copy without virtual new-line */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0)
+            memcpy(buffer, data+PPOS, amountToCopy - extraNewLine);
+#else
+            int ret = copy_to_user(buffer, data+PPOS, amountToCopy - extraNewLine);
+            if ( ret ) /* copy without virtual new-line */
             {
                 return -EFAULT;
             }
+#endif
         }
         if ( extraNewLine > 0 )
         {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0)
+            *((char *)buffer + amountToCopy - extraNewLine) = '\n';
+#else
             if( put_user('\n', ((char __user *) buffer) + amountToCopy - extraNewLine) )
             {
                 return -EFAULT;
             }
+#endif
         }
         *lenp = amountToCopy;
         PPOS += amountToCopy;
