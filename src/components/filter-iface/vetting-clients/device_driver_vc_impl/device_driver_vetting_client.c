@@ -26,6 +26,10 @@
 #include <linux/poll.h>
 #include <linux/major.h>
 #include <linux/miscdevice.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0)
+  #define HAVE_COMPAT_IOCTL 1
+  #define HAVE_UNLOCKED_IOCTL 1
+#endif
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
   #ifdef CONFIG_X86_64
     #include <asm/ioctl32.h>

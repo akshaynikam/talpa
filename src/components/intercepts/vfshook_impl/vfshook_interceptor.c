@@ -2602,7 +2602,7 @@ static int prepend_path(const struct path *path,
     struct vfsmount *vfsmnt = path->mnt;
     bool slash = false;
     int error = 0;
-    unsigned m_seq = 1;
+    unsigned m_seq = 0;
 
 restart_mnt:
     talpa_vfsmount_lock(&m_seq);

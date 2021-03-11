@@ -1254,7 +1254,7 @@ if test $((kern_version_code)) -ge 132608; then
 
     TALPA_LOCATE_HEADER(linux/dcache.h, $kernelhdrspath)
     AC_MSG_CHECKING([for 2.6.38 style locking])
-    if ${EGREP} "seqcount_t d_seq;" $TALPA_HEADER_LOCATION/linux/dcache.h >/dev/null 2>&1; then
+    if ${EGREP} "seqcount.*_t d_seq;" $TALPA_HEADER_LOCATION/linux/dcache.h >/dev/null 2>&1; then
         AC_MSG_RESULT([post 2.6.38 style locking])
         HOLD_DCACHE_LOCK_WHILE_CALLING_D_PATH=0
     else
@@ -1754,6 +1754,18 @@ if test $((kern_version_code)) -ge 132608; then
                     AC_MSG_RESULT([logical])
                 fi
             fi
+        fi
+    fi
+
+    if test "$map_writable" = "yes"; then
+        # Check for is_module_address address
+        AC_MSG_CHECKING([for is_module_address address])
+        tmp=`${EGREP} " is_module_address\$" "$system_map" 2>/dev/null | ${CUT} -d ' ' -f 1`
+        if test "$tmp" != ""; then
+            AC_MSG_RESULT([0x$tmp])
+            AC_SUBST(rodata, "$rodata -DTALPA_ISMODULEADDRESS_ADDR=0x${tmp}UL")
+        else
+            AC_MSG_ERROR([not found])
         fi
     fi
 

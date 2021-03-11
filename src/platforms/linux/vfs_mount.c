@@ -422,12 +422,13 @@ static talpa_mount_struct* talpa_lookup_mnt_last(struct vfsmount *mnt, struct de
     return NULL;
 }
 
-
+/*
 # if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32)
 #  ifdef DEBUG
 #   define DEBUG_PROPAGATION_POINTS
 #  endif
 # endif
+*/
 
 # ifdef DEBUG_PROPAGATION_POINTS
 /* calls d_path with dentry and vfsmount */
