@@ -18,7 +18,7 @@
 
 AC_INIT(talpa, 0.9.95)
 AC_CONFIG_AUX_DIR(config)
-AC_COPYRIGHT(Copyright (c) 2004-2019 Sophos Plc)
+AC_COPYRIGHT(Copyright (c) 2004-2021 Sophos Plc)
 
 AM_INIT_AUTOMAKE([1.9 tar-ustar dist-zip dist-bzip2])
 AM_CONFIG_HEADER(config.h)
@@ -801,6 +801,8 @@ ${RM} -f tests/configure/kernversion
 ## 3.11.10== 199434     0x030b0a (Ubuntu 12.04.4)
 ## 3.12.0 == 199680
 ## 3.13.0 == 199936     0x030d00
+## 5.0.0  == 327680     0x050000
+## 5.9.0  == 329984     0x050900
 
 AC_MSG_CHECKING([for kernel version string])
 TALPA_LOCATE_HEADER($utsrelease_h, $kernelhdrspath, cckernrelease="-DSEPARATE_UTS_RELEASE", /bin/true, [quiet])
@@ -1756,19 +1758,22 @@ if test $((kern_version_code)) -ge 132608; then
             fi
         fi
     fi
-
-    if test "$map_writable" = "yes"; then
-        # Check for is_module_address address
-        AC_MSG_CHECKING([for is_module_address address])
-        tmp=`${EGREP} " is_module_address\$" "$system_map" 2>/dev/null | ${CUT} -d ' ' -f 1`
-        if test "$tmp" != ""; then
-            AC_MSG_RESULT([0x$tmp])
-            AC_SUBST(rodata, "$rodata -DTALPA_ISMODULEADDRESS_ADDR=0x${tmp}UL")
-        else
-            AC_MSG_ERROR([not found])
+    
+    # >= 5.9.0
+    if test $((kern_version_code)) -ge 329984; then
+        if test "$map_writable" = "yes"; then
+            # Check for is_module_address address
+            AC_MSG_CHECKING([for is_module_address address])
+            tmp=`${EGREP} " is_module_address\$" "$system_map" 2>/dev/null | ${CUT} -d ' ' -f 1`
+            if test "$tmp" != ""; then
+                AC_MSG_RESULT([0x$tmp])
+                AC_SUBST(rodata, "$rodata -DTALPA_ISMODULEADDRESS_ADDR=0x${tmp}UL")
+            else
+                AC_MSG_ERROR([not found])
+            fi
         fi
     fi
-
+    
     if test "$syscallhook" = "no" -a "$interceptor_module" != "lsm"; then
         AC_SUBST(interceptor_module,lsm)
         AC_SUBST(interceptor_name,LSMInterceptor)
