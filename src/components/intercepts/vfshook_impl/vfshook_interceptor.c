@@ -785,7 +785,7 @@ static struct dentry* talpaInodeLookup(struct inode *inode, struct dentry *dentr
 
     BUG_ON(NULL == inode);
 
-    dbg("InodeLookup on %s", inode->i_sb->s_type->name);
+    /* dbg("InodeLookup on %s", inode->i_sb->s_type->name); */
 
     talpa_rcu_read_lock(&GL_object.mPatchLock);
 
@@ -806,12 +806,12 @@ static struct dentry* talpaInodeLookup(struct inode *inode, struct dentry *dentr
             /* make sure we find the correct fstype to repatch */
             if ( strcmp( inode->i_sb->s_type->name, p->fstype->name ) != 0 )
             {
-                dbg("Ignoring patch for %s, it's not %s", p->fstype->name, inode->i_sb->s_type->name );
+                /* dbg("Ignoring patch for %s, it's not %s", p->fstype->name, inode->i_sb->s_type->name ); */
                 continue;
             }
 
             patch = getPatch(p);
-            dbg("Found patch for %s", patch->fstype->name);
+            /* dbg("Found patch for %s", patch->fstype->name); */
             break;
         }
     }

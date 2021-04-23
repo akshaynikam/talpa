@@ -50,6 +50,8 @@ check_PROGRAMS +=   chkstdinterceptor \
                     chkext2umnt \
                     chk_null_mnt \
                     chk_null_fstype_mnt \
+                    chklinuxvfs2 \
+                    chklinuxvfs3 \
                     chkext2fops \
                     vc_inclusionproc \
                     chkvc \
@@ -171,6 +173,8 @@ chkext2umnt_SOURCES = chkext2umnt.c
 chkext2fops_SOURCES = chkext2fops.c
 chk_null_mnt_SOURCES = chk_null_mnt.c
 chk_null_fstype_mnt_SOURCES = chk_null_fstype_mnt.c
+chklinuxvfs2_SOURCES = chklinuxvfs2.c
+chklinuxvfs3_SOURCES = chklinuxvfs3.c
 
 vc_inclusionproc_SOURCES = vc_inclusionproc.c ../clients/vc-lib.c ../clients/talpa.c
 vc_inclusionproc_CFLAGS = $(USERSPACE_C_FLAGS)
@@ -358,7 +362,10 @@ TESTS                   = tlp-init.sh \
                           syslog_ops.sh \
                           tlp_dualfsdisable.sh \
                           tlp_dualfsenable.sh \
-                          chklinuxvfs.sh
+                          chklinuxvfs.sh \
+                          chklinuxvfs1.sh \
+                          chklinuxvfs2.sh \
+                          chklinuxvfs3.sh
 
 if BINARYSYSCTL
 TESTS +=                  sysctldisable.sh \
@@ -441,6 +448,7 @@ TESTS +=                  chk_vettingctrl12.sh \
                           chk_fsexclusion17.sh \
                           chk_fsexclusion18.sh \
                           chk_fsexclusion19.sh \
+                          chk_fsexclusion20.sh \
                           tlp-4-001.sh \
                           tlp-4-002.sh \
                           tlp-4-003.sh \

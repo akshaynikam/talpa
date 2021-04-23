@@ -3,7 +3,7 @@
  *
  * TALPA Filesystem Interceptor
  *
- * Copyright (C) 2004-2017 Sophos Limited, Oxford, England.
+ * Copyright (C) 2004-2021 Sophos Limited, Oxford, England.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -214,6 +214,11 @@ static ssize_t securityfsRead(struct file *file, char __user *buf, size_t count,
         return -EBADF;
     }
 
+    if ( file->f_pos < 0 )
+    {
+        return -EINVAL;
+    }
+
     element = (struct configurationElement *)file->private_data;
     if ( !element )
     {
@@ -239,12 +244,11 @@ static ssize_t securityfsRead(struct file *file, char __user *buf, size_t count,
     //~ }
 
     len = strlen(data) + extraNewLine; /* For the new line */
-    amountToCopy = len - file->f_pos;
-
-    if (amountToCopy <= 0)
+    if (file->f_pos >= len)
     {
         return 0;
     }
+    amountToCopy = len - file->f_pos;
 
     if ( amountToCopy > count )
     {
@@ -253,7 +257,7 @@ static ssize_t securityfsRead(struct file *file, char __user *buf, size_t count,
         extraNewLine = 0;
         amountToCopy = count;
     }
-    if ( amountToCopy - extraNewLine > 0 )
+    if ( amountToCopy > extraNewLine )
     {
         /*
          * Need to copy from the config data:
@@ -290,6 +294,12 @@ static ssize_t securityfsWrite(struct file *file, const char __user *buf, size_t
     {
         return 0;
     }
+    
+    if ( !file )
+    {
+        dbg("Attempting to write to null file");
+        return -EBADF;
+    }
 
     if ( file->f_pos )
     {
@@ -308,7 +318,7 @@ static ssize_t securityfsWrite(struct file *file, const char __user *buf, size_t
         return -EBADF;
     }
 
-    if ( strnlen_user(buf, count) < 0 )
+    if ( strnlen_user(buf, count) < 0 ) /* check that the buffer is readable */
     {
         return -EFAULT;
     }
