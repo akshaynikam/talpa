@@ -3,7 +3,7 @@
 ##
 ## TALPA Filesystem Interceptor
 ##
-## Copyright (C) 2004-2018 Sophos Limited, Oxford, England.
+## Copyright (C) 2004-2021 Sophos Limited, Oxford, England.
 ##
 ## This program is free software; you can redistribute it and/or modify it under the terms of the
 ## GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -365,7 +365,8 @@ TESTS                   = tlp-init.sh \
                           chklinuxvfs.sh \
                           chklinuxvfs1.sh \
                           chklinuxvfs2.sh \
-                          chklinuxvfs3.sh
+                          chklinuxvfs3.sh \
+                          chklinuxvfs4.sh
 
 if BINARYSYSCTL
 TESTS +=                  sysctldisable.sh \
