@@ -3238,6 +3238,7 @@ VFSHookInterceptor* newVFSHookInterceptor(void)
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "ramfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "aufs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "squashfs", false);
+    appendObject(&GL_object, &GL_object.mGoodFilesystems, "zfs", false);
 
     /* Filesystem which should not (or must not) be patched */
     appendObject(&GL_object, &GL_object.mSkipFilesystems, "rootfs", true);
