@@ -3,7 +3,7 @@
  *
  * TALPA Filesystem Interceptor
  *
- * Copyright (C) 2004-2017 Sophos Limited, Oxford, England.
+ * Copyright (C) 2004-2021 Sophos Limited, Oxford, England.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -26,20 +26,20 @@
 #include <linux/poll.h>
 #include <linux/major.h>
 #include <linux/miscdevice.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0)
-  #define HAVE_COMPAT_IOCTL 1
-  #define HAVE_UNLOCKED_IOCTL 1
-#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
   #ifdef CONFIG_X86_64
     #include <asm/ioctl32.h>
     #define REGISTER_COMPAT_IOCTL
   #endif
-#else
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22)
   #if defined CONFIG_X86_64 && !defined HAVE_COMPAT_IOCTL && defined CONFIG_COMPAT
     #include <linux/ioctl32.h>
     #define REGISTER_COMPAT_IOCTL
   #endif
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
+  #define HAVE_COMPAT_IOCTL 1
+  #define HAVE_UNLOCKED_IOCTL 1
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,3,0)
