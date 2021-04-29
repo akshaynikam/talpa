@@ -941,12 +941,24 @@ fi
 AC_MSG_CHECKING([for System.map])
 if test "$auto_system_map" = "yes"; then
     system_map="/boot/System.map-${kern_uts_release}"
+    
+    # debian have stopped putting a valid System.map in /boot by default
+    # so look in their alternate location if the default System.map is invalid.
+    if ! grep "printk" "$system_map" >/dev/null 2>&1; then
+        alt_system_map="/usr/lib/debug/boot/System.map-${kern_uts_release}"
+        if grep "printk" "$alt_system_map" >/dev/null 2>&1; then
+            system_map=$alt_system_map
+        fi
+    fi
 fi
 if test ! -f "$system_map"; then
     AC_MSG_ERROR([$system_map not found])
     system_map=""
 elif test ! -r "$system_map"; then
     AC_MSG_ERROR([$system_map not readable])
+    system_map=""
+elif ! grep "printk" "$system_map" >/dev/null 2>&1; then
+    AC_MSG_ERROR([$system_map is invalid])
     system_map=""
 else
     AC_MSG_RESULT([$system_map])
