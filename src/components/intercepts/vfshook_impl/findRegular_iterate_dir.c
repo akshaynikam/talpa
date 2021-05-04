@@ -157,6 +157,12 @@ static struct TalpaFindRegularContext* openDirectory(struct TalpaFindRegularCont
     dirFilp = filp_open(parent->dirname, O_RDONLY | O_DIRECTORY, 0);
     if ( IS_ERR(dirFilp) )
     {
+        if (PTR_ERR(dirFilp) == -EACCES)
+        {
+            /* Permission denied */
+            return (struct TalpaFindRegularContext*)dirFilp; /* Error */
+        }
+
         err("Failed to open directory: %ld",PTR_ERR(dirFilp));
         return (struct TalpaFindRegularContext*)dirFilp; /* Error */
     }
@@ -202,13 +208,19 @@ static struct TalpaFindRegularContext* initialOpenDirectory(const char* dirname,
 
 
     dirFilp = filp_open(dirname, O_RDONLY | O_DIRECTORY, 0);
-    if (PTR_ERR(dirFilp) == -ENOTDIR)
+    if ( IS_ERR(dirFilp) )
     {
-        /* Mount point isn't a directory */
-        return (struct TalpaFindRegularContext*)dirFilp; /* Error */
-    }
-    else if ( IS_ERR(dirFilp) )
-    {
+        if (PTR_ERR(dirFilp) == -ENOTDIR)
+        {
+            /* Mount point isn't a directory */
+            return (struct TalpaFindRegularContext*)dirFilp; /* Error */
+        }
+        else if (PTR_ERR(dirFilp) == -EACCES)
+        {
+            /* Permission denied */
+            return (struct TalpaFindRegularContext*)dirFilp; /* Error */
+        }
+
         err("Failed to open initial directory: %ld",PTR_ERR(dirFilp));
         return (struct TalpaFindRegularContext*)dirFilp; /* Error */
     }
@@ -272,24 +284,31 @@ static struct dentry *scanDirectory(const char* dirname, char* buf, size_t bufsi
     };
 
     context = initialOpenDirectory(dirname, overflow, buf, bufsize);
-    if (PTR_ERR(context) == -ENOTDIR)
+    if (IS_ERR(context))
     {
-        /* mount point isn't a directory, try it as a file */
-        struct path p;
-        error = kern_path(dirname, LOOKUP_NO_AUTOMOUNT, &p);
-
-        if (error == 0)
+        if (PTR_ERR(context) == -ENOTDIR)
         {
-            struct dentry* reg = dget(p.dentry);
+            /* mount point isn't a directory, try it as a file */
+            struct path p;
+            error = kern_path(dirname, LOOKUP_NO_AUTOMOUNT, &p);
 
-            path_put(&p);
-            return reg;
+            if (error == 0)
+            {
+                struct dentry* reg = dget(p.dentry);
+
+                path_put(&p);
+                return reg;
+            }
+            err("mountpoint %s isn't a directory and can't be opened as a file: %d",dirname,error);
+            return NULL;
         }
-        err("mountpoint %s isn't a directory and can't be opened as a file: %d",dirname,error);
-        return NULL;
-    }
-    else if (IS_ERR(context))
-    {
+        else if (PTR_ERR(context) == -EACCES)
+        {
+            /* permission denied */
+            dbg("Permission denied when opening initial directory %s",dirname);
+            return NULL;
+        }
+
         err("Failed to open initial directory %s: %ld",dirname,PTR_ERR(context));
         return NULL;
     }
