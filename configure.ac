@@ -673,6 +673,16 @@ else
 fi
 AC_SUBST(unistd64x32include, "$unistd64x32include")
 
+TALPA_LOCATE_HEADER(uapi/linux/mount.h, $kernelhdrspath, linuxuapimountfound=yes, linuxuapimountfound=no)
+AC_MSG_RESULT([$linuxuapimountfound - $TALPA_HEADER_LOCATION])
+if test "$linuxuapimountfound" = "yes" ; then
+    AC_DEFINE([HAVE_UAPILINUXMOUNT],1,[Defined when we have uapi/linux/mount.h])
+    uapilinuxmount="-DTALPA_HAVE_UAPILINUXMOUNT"
+else
+    uapilinuxmount=""
+fi
+AC_SUBST(uapilinuxmount, "$uapilinuxmount")
+
 AC_MSG_CHECKING([for kernel configuration])
 TALPA_LOCATE_HEADER(generated/autoconf.h, $kernelhdrspath, autoconffound=yes, autoconffound=no, [quiet])
 if test "$autoconffound" = "yes"; then
@@ -2218,6 +2228,7 @@ if test $((kern_version_code)) -ge 132608; then
                 s/@lookup_mnt_last@/${lookup_mnt_last}/; \
                 s/@get_fs_root_and_pwd@/${get_fs_root_and_pwd}/; \
                 s/@vfsmount_namespace@/${vfsmount_namespace}/; \
+                s/@uapilinuxmount@/${uapilinuxmount}/; \
                 s/@compile_flags@/${compile_flags}/; \
                 s/@builddualfs@/${builddualfs}/; \
                 s/@dualfs@/${dualfs}/;" ${srcdir}/Makefile26.in >${srcdir}/Makefile
