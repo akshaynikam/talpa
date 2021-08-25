@@ -1781,8 +1781,10 @@ if test $((kern_version_code)) -ge 132608; then
         fi
     fi
     
-    # >= 5.9.0
-    if test $((kern_version_code)) -ge 329984; then
+    # __module_address stops being available in various 5.x versions,
+    # but is hard to detect. Use is_module_address for 5.0.0+
+    ## >= 5.0.0
+    if test $((kern_version_code)) -ge 327680; then
         if test "$map_writable" = "yes"; then
             # Check for is_module_address address
             AC_MSG_CHECKING([for is_module_address address])
