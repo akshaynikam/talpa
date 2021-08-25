@@ -1197,7 +1197,7 @@ if test "$probe_kernel_write_missing" == "yes"; then
         AC_MSG_RESULT([0x$copy_to_kernel_nofault_addr])
         AC_SUBST(probe_kernel_write, "$probe_kernel_write -DTALPA_HAS_COPY_TO_KERNEL_NOFAULT -DTALPA_COPY_TO_KERNEL_NOFAULT_ADDR=0x${copy_to_kernel_nofault_addr}UL")
     else
-        AC_MSG_ERROR([not found])
+        AC_MSG_RESULT([not found])
     fi
 fi
 
