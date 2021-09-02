@@ -2,7 +2,7 @@
 #
 # TALPA test script
 #
-# Copyright (C) 2004-2011 Sophos Limited, Oxford, England.
+# Copyright (C) 2021 Sophos Limited, Oxford, England.
 #
 # This program is free software; you can redistribute it and/or modify it under the terms of the
 # GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -41,9 +41,9 @@ function testone
             exit $inc
         fi
 
-        # test write of multiple chunks, extending beyond max length
-        dd if=/dev/urandom of=${testpath} bs=1 count=100000 #2>/dev/null
-
+        # test read from offset beyond stored string
+        dd if=${testpath} bs=1 count=1 skip=16 >/dev/null
+     
         read <${testpath} status3
         if test "$status1" != "$status3"; then
             exit $inc

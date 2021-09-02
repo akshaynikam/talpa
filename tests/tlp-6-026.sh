@@ -2,7 +2,7 @@
 #
 # TALPA test script
 #
-# Copyright (C) 2004-2011 Sophos Limited, Oxford, England.
+# Copyright (C) 2004-2021 Sophos Limited, Oxford, England.
 #
 # This program is free software; you can redistribute it and/or modify it under the terms of the
 # GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -16,6 +16,8 @@
 #
 
 . ${srcdir}/tlp-cleanup.sh
+
+rm /tmp/talpa-file-object-test-file
 
 tlp_insmod modules/tlp-file.${ko}
 

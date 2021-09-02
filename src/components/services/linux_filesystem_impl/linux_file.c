@@ -512,9 +512,9 @@ static loff_t length(const void* self)
 static loff_t seek(void* self, loff_t offset, int whence)
 {
     struct file* file = this->mFile;
-    mm_segment_t oldfs;
     loff_t res;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,8)
+    mm_segment_t oldfs;
     loff_t (*fn)(struct file *, loff_t, int);
 #endif
 
@@ -538,17 +538,17 @@ static loff_t seek(void* self, loff_t offset, int whence)
     lock_kernel();
     res = fn(file, offset, whence);
     unlock_kernel();
+    set_fs(oldfs);
 #elif LINUX_VERSION_CODE < KERNEL_VERSION(2,6,8)
     fn = default_llseek;
     if (file->f_op && file->f_op->llseek)
         fn = file->f_op->llseek;
     oldfs = get_fs(); set_fs(KERNEL_DS);
     res = fn(file, offset, whence);
+    set_fs(oldfs);
 #else
-    oldfs = get_fs(); set_fs(KERNEL_DS);
     res = vfs_llseek(file, offset, whence);
 #endif
-    set_fs(oldfs);
 
     return res;
 }

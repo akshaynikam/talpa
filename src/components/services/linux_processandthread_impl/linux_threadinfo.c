@@ -3,7 +3,7 @@
 *
 * TALPA Filesystem Interceptor
 *
-* Copyright (C) 2004-2017 Sophos Limited, Oxford, England.
+* Copyright (C) 2004-2021 Sophos Limited, Oxford, England.
 *
 * This program is free software; you can redistribute it and/or modify it under the terms of the
 * GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -39,6 +39,16 @@
 #include "platforms/linux/uaccess.h"
 
 #include "linux_threadinfo.h"
+
+
+#ifdef TALPA_HAS_PROBE_KERNEL_READ
+#define TALPA_HAS_KERNEL_READ
+#define talpa_kernel_read(dst, src, size) probe_kernel_read(dst, src, size)
+#endif
+#ifdef TALPA_HAS_COPY_FROM_USER_NOFAULT
+#define TALPA_HAS_KERNEL_READ
+#define talpa_kernel_read(dst, src, size) copy_from_user_nofault(dst, src, size)
+#endif
 
 /*
 * Forward declare implementation methods.
@@ -166,8 +176,8 @@ LinuxThreadInfo* newLinuxThreadInfo(void)
             object->mEnv = talpa_alloc(object->mEnvSize);
             if ( likely(object->mEnv != NULL) )
             {
-#ifdef TALPA_HAS_PROBE_KERNEL_READ
-                if ( probe_kernel_read(object->mEnv, (void *)mm->env_start, object->mEnvSize) )
+#ifdef TALPA_HAS_KERNEL_READ
+                if ( talpa_kernel_read(object->mEnv, (void *)mm->env_start, object->mEnvSize) )
                 {
                     dbg("Can't copy environment for %s[%d/%d] (%lu)!", current->comm, current->tgid, current->pid, object->mEnvSize);
                     talpa_free(object->mEnv);

@@ -3,7 +3,7 @@
  *
  * TALPA Filesystem Interceptor
  *
- * Copyright (C) 2004-2019 Sophos Limited, Oxford, England.
+ * Copyright (C) 2004-2021 Sophos Limited, Oxford, England.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -26,7 +26,7 @@
 #include <linux/unistd.h>
 
 #include <linux/mount.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
+#ifdef TALPA_HAVE_UAPILINUXMOUNT
 #include <uapi/linux/mount.h>
 #endif
 #include <linux/sched.h>
@@ -785,7 +785,7 @@ static struct dentry* talpaInodeLookup(struct inode *inode, struct dentry *dentr
 
     BUG_ON(NULL == inode);
 
-    dbg("InodeLookup on %s", inode->i_sb->s_type->name);
+    /* dbg("InodeLookup on %s", inode->i_sb->s_type->name); */
 
     talpa_rcu_read_lock(&GL_object.mPatchLock);
 
@@ -806,12 +806,12 @@ static struct dentry* talpaInodeLookup(struct inode *inode, struct dentry *dentr
             /* make sure we find the correct fstype to repatch */
             if ( strcmp( inode->i_sb->s_type->name, p->fstype->name ) != 0 )
             {
-                dbg("Ignoring patch for %s, it's not %s", p->fstype->name, inode->i_sb->s_type->name );
+                /* dbg("Ignoring patch for %s, it's not %s", p->fstype->name, inode->i_sb->s_type->name ); */
                 continue;
             }
 
             patch = getPatch(p);
-            dbg("Found patch for %s", patch->fstype->name);
+            /* dbg("Found patch for %s", patch->fstype->name); */
             break;
         }
     }
@@ -2602,7 +2602,7 @@ static int prepend_path(const struct path *path,
     struct vfsmount *vfsmnt = path->mnt;
     bool slash = false;
     int error = 0;
-    unsigned m_seq = 1;
+    unsigned m_seq = 0;
 
 restart_mnt:
     talpa_vfsmount_lock(&m_seq);
@@ -3218,6 +3218,7 @@ VFSHookInterceptor* newVFSHookInterceptor(void)
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "ext4", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "jfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "xfs", false);
+    appendObject(&GL_object, &GL_object.mGoodFilesystems, "btrfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "reiserfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "tmpfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "minix", false);
@@ -3236,6 +3237,8 @@ VFSHookInterceptor* newVFSHookInterceptor(void)
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "ncpfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "ramfs", false);
     appendObject(&GL_object, &GL_object.mGoodFilesystems, "aufs", false);
+    appendObject(&GL_object, &GL_object.mGoodFilesystems, "squashfs", false);
+    appendObject(&GL_object, &GL_object.mGoodFilesystems, "zfs", false);
 
     /* Filesystem which should not (or must not) be patched */
     appendObject(&GL_object, &GL_object.mSkipFilesystems, "rootfs", true);
@@ -3266,6 +3269,7 @@ VFSHookInterceptor* newVFSHookInterceptor(void)
     appendObject(&GL_object, &GL_object.mSkipFilesystems, "mqueue", true);
     appendObject(&GL_object, &GL_object.mSkipFilesystems, "cgroup", false);
     appendObject(&GL_object, &GL_object.mSkipFilesystems, "cgroup2", false);
+    appendObject(&GL_object, &GL_object.mSkipFilesystems, "nsfs", false);
 
     /* Filesystems not to be scanned immediately after mount */
 #ifdef TALPA_HAS_SMBFS

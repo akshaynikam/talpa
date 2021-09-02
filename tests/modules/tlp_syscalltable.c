@@ -3,7 +3,7 @@
  *
  * TALPA Filesystem Interceptor
  *
- * Copyright(C) 2004-2019 Sophos Limited, Oxford, England.
+ * Copyright(C) 2004-2021 Sophos Limited, Oxford, England.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License Version 2 as published by the Free Software Foundation.
@@ -471,11 +471,20 @@ static void *map_writable(void *addr, size_t len)
         void *page_addr = (void *)((unsigned long)addr & PAGE_MASK);
         int i;
 
+#ifdef TALPA_ISMODULEADDRESS_ADDR
+        typedef bool (*ima_fn)(unsigned long addr);
+        ima_fn talpa_is_module_address = (ima_fn)talpa_get_symbol("is_module_address", (void *)TALPA_ISMODULEADDRESS_ADDR);
+#endif
+
         if (pages == NULL)
                 return NULL;
 
         for (i = 0; i < nr_pages; i++) {
+#ifdef TALPA_ISMODULEADDRESS_ADDR
+                if (!talpa_is_module_address((unsigned long)page_addr)) {
+#else
                 if (__module_address((unsigned long)page_addr) == NULL) {
+#endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22) || !defined(CONFIG_X86_64)
                         pages[i] = virt_to_page(page_addr);
 #else /* LINUX_VERSION_CODE < && CONFIG_X86_64 */
@@ -488,7 +497,7 @@ static void *map_writable(void *addr, size_t len)
 #endif /* LINUX_VERSION_CODE || !CONFIG_X86_64 */
                         WARN_ON(!PageReserved(pages[i]));
                 } else {
-                        pages[i] = vmalloc_to_page(addr);
+                        pages[i] = vmalloc_to_page(page_addr);
                 }
                 if (pages[i] == NULL) {
                         kfree(pages);
