@@ -1782,19 +1782,16 @@ if test $((kern_version_code)) -ge 132608; then
     fi
     
     # __module_address stops being available in various 5.x versions,
-    # but is hard to detect. Use is_module_address for 5.0.0+
-    ## >= 5.0.0
-    if test $((kern_version_code)) -ge 327680; then
-        if test "$map_writable" = "yes"; then
-            # Check for is_module_address address
-            AC_MSG_CHECKING([for is_module_address address])
-            tmp=`${EGREP} " is_module_address\$" "$system_map" 2>/dev/null | ${CUT} -d ' ' -f 1`
-            if test "$tmp" != ""; then
-                AC_MSG_RESULT([0x$tmp])
-                AC_SUBST(rodata, "$rodata -DTALPA_ISMODULEADDRESS_ADDR=0x${tmp}UL")
-            else
-                AC_MSG_ERROR([not found])
-            fi
+    # and backports to 4.x. Use is_module_address where available.
+    if test "$map_writable" = "yes"; then
+        # Check for is_module_address address
+        AC_MSG_CHECKING([for is_module_address address])
+        tmp=`${EGREP} " is_module_address\$" "$system_map" 2>/dev/null | ${CUT} -d ' ' -f 1`
+        if test "$tmp" != ""; then
+            AC_MSG_RESULT([0x$tmp])
+            AC_SUBST(rodata, "$rodata -DTALPA_ISMODULEADDRESS_ADDR=0x${tmp}UL")
+        else
+            AC_MSG_RESULT([not found])
         fi
     fi
     
