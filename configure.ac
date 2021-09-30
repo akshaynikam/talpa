@@ -811,6 +811,7 @@ ${RM} -f tests/configure/kernversion
 ## 3.11.10== 199434     0x030b0a (Ubuntu 12.04.4)
 ## 3.12.0 == 199680
 ## 3.13.0 == 199936     0x030d00
+## 4.4.0  == 263168     0x040400
 ## 5.0.0  == 327680     0x050000
 ## 5.9.0  == 329984     0x050900
 
@@ -1782,16 +1783,19 @@ if test $((kern_version_code)) -ge 132608; then
     fi
     
     # __module_address stops being available in various 5.x versions,
-    # and backports to 4.x. Use is_module_address where available.
-    if test "$map_writable" = "yes"; then
-        # Check for is_module_address address
-        AC_MSG_CHECKING([for is_module_address address])
-        tmp=`${EGREP} " is_module_address\$" "$system_map" 2>/dev/null | ${CUT} -d ' ' -f 1`
-        if test "$tmp" != ""; then
-            AC_MSG_RESULT([0x$tmp])
-            AC_SUBST(rodata, "$rodata -DTALPA_ISMODULEADDRESS_ADDR=0x${tmp}UL")
-        else
-            AC_MSG_RESULT([not found])
+    # but is hard to detect. Use is_module_address for 4.4.0+
+    ## >= 4.4.0
+    if test $((kern_version_code)) -ge 263168; then
+        if test "$map_writable" = "yes"; then
+            # Check for is_module_address address
+            AC_MSG_CHECKING([for is_module_address address])
+            tmp=`${EGREP} " is_module_address\$" "$system_map" 2>/dev/null | ${CUT} -d ' ' -f 1`
+            if test "$tmp" != ""; then
+                AC_MSG_RESULT([0x$tmp])
+                AC_SUBST(rodata, "$rodata -DTALPA_ISMODULEADDRESS_ADDR=0x${tmp}UL")
+            else
+                AC_MSG_ERROR([not found])
+            fi
         fi
     fi
     
