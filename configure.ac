@@ -1794,7 +1794,7 @@ if test $((kern_version_code)) -ge 132608; then
                 AC_MSG_RESULT([0x$tmp])
                 AC_SUBST(rodata, "$rodata -DTALPA_ISMODULEADDRESS_ADDR=0x${tmp}UL")
             else
-                AC_MSG_ERROR([not found])
+                AC_MSG_RESULT([not found])
             fi
         fi
     fi
