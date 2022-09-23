@@ -95,6 +95,11 @@ static void examineFile(const void* self, IEvaluationReport* report, const IPers
         return;
     }
 
+    /* Do not cache the file if ALLOW_NOCACHE response received */
+    if ( report->noCacheResponse(report) )
+    {
+        return;
+    }
     /* If the access was allowed by an external vetting client add it to the cache */
     /* Do not cache the file if it is writable by somebody, unless it is only us. */
     if ( report->hasBeenExternallyVetted(report) &&

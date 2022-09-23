@@ -37,6 +37,8 @@ static void             setErrorCode                (void* self, int errCode);
 static void             deleteEvaluationReportImpl  (struct tag_EvaluationReportImpl* object);
 static bool             hasBeenExternallyVetted     (const void* self);
 static void             externallyVetted            (void* self);
+static bool             noCacheResponse             (const void* self);
+static void             setNoCacheResponse          (void* self);
 /*
  * Template Object.
  */
@@ -53,6 +55,8 @@ static EvaluationReportImpl template_EvaluationReportImpl =
             setErrorCode,
             hasBeenExternallyVetted,
             externallyVetted,
+            noCacheResponse,
+            setNoCacheResponse,
             NULL,
             (void (*)(void*))deleteEvaluationReportImpl
         },
@@ -217,6 +221,17 @@ static bool hasBeenExternallyVetted(const void* self)
 static void externallyVetted(void* self)
 {
     this->mExternallyVetted = true;
+    return;
+}
+
+static bool noCacheResponse(const void* self)
+{
+    return this->mNoCacheResponse;
+}
+
+static void setNoCacheResponse(void* self)
+{
+    this->mNoCacheResponse = true;
     return;
 }
 /*

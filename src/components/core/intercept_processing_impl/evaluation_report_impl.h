@@ -47,6 +47,7 @@ typedef struct tag_EvaluationReportImpl
     int                 mTimeouts;
     int                 mError;
     bool                mExternallyVetted;
+    bool                mNoCacheResponse;
 } EvaluationReportImpl;
 
 /*

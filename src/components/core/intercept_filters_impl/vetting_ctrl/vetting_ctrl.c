@@ -2077,6 +2077,10 @@ static struct TalpaProtocolHeader* vettingResponse(void* self, VettingClient* cl
     dbg("[client %u-%u-%u] response %u", processParentPID(current), current->tgid, current->pid, packet->response);
     switch ( packet->response )
     {
+        case TALPA_ALLOW_NOCACHE:
+            job->report->setNoCacheResponse(job->report);
+            job->report->setRecommendedAction(job->report, EIA_Allow);
+            break;
         case TALPA_ALLOW:
             job->report->setRecommendedAction(job->report, EIA_Allow);
             break;

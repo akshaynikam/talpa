@@ -35,6 +35,9 @@ typedef struct
     void                   (*setErrorCode)           (void* self, int errCode);
     bool                   (*hasBeenExternallyVetted)(const void* self);
     void                   (*externallyVetted)       (void* self);
+    bool                   (*noCacheResponse)        (const void* self);
+    void                   (*setNoCacheResponse)     (void* self);
+    /*
     /*
      *  Object supporting this interface instance.
      */
