@@ -85,11 +85,11 @@ typedef enum
 typedef enum
 {
     TALPA_ALLOW = 0x0,
-    TALPA_ALLOW_NOCACHE,
     TALPA_DENY,
     TALPA_TIMEOUT,
     TALPA_ERROR,
-    TALPA_REQEXTDETAIL
+    TALPA_REQEXTDETAIL,
+    TALPA_ALLOW_NOCACHE
 } ETalpaProtocolResponse;
 
 
